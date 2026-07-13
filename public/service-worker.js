@@ -3,7 +3,7 @@
  * Handles offline caching, background sync, and push notifications
  */
 
-const CACHE_NAME = 'broker-v2';
+const CACHE_NAME = 'broker-v4';
 const RUNTIME_CACHE = 'broker-runtime';
 const STATIC_CACHE = 'broker-static';
 const DYNAMIC_CACHE = 'broker-dynamic';
