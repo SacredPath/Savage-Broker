@@ -697,7 +697,14 @@ class APIClient {
     }
   }
 
+  /**
+   * @deprecated Use BalanceService.getUserBalances() instead
+   * This method is deprecated and will be removed in a future version.
+   * BalanceService is the single source of truth for all balance operations.
+   */
   async getWalletBalances(userId) {
+    console.warn('[APIClient] DEPRECATED: getWalletBalances() is deprecated. Use BalanceService.getUserBalances() instead.');
+    
     try {
       console.log('[APIClient] Getting wallet balances via REST API...');
       

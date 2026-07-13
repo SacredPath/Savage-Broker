@@ -108,7 +108,7 @@ class ConvertPage {
 
   async loadUserBalances() {
     try {
-      console.log('Loading user balances via REST API...');
+      console.log('Loading user balances via BalanceService...');
       
       // Get current user ID
       const userId = await this.api.getCurrentUserId();
@@ -116,10 +116,15 @@ class ConvertPage {
         throw new Error('User not authenticated');
       }
 
-      // Load user balances from database
-      const data = await this.api.getWalletBalances(userId);
+      // Use BalanceService as single source of truth
+      if (!window.BalanceService) {
+        throw new Error('BalanceService not available');
+      }
       
-      this.userBalances = data;
+      const balanceData = await window.BalanceService.getUserBalances(userId);
+      
+      // Transform BalanceService format to the format expected by convert page
+      this.userBalances = balanceData.balances || {};
       console.log('User balances loaded:', this.userBalances);
     } catch (error) {
       console.error('Failed to load user balances:', error);
