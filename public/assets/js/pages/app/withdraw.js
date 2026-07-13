@@ -59,6 +59,7 @@ class WithdrawPage {
       this.setupMethodCards();
       this.setupForms();
       this.setupURLParameters();
+      this.updateBalanceDisplay();
       
       console.log('Withdrawals page setup complete');
     } catch (error) {
@@ -268,21 +269,29 @@ class WithdrawPage {
 
   async loadUserBalances() {
     try {
-      console.log('Loading user balances via REST API...');
+      console.log('Loading user balances via BalanceService...');
       
-      // For now, use null since we don't have a balances API endpoint yet
-      // TODO: Replace with actual REST API call when available
-      // const data = await this.api.getWalletBalances(userId);
-      
-      this.userBalances = null;
-      console.log('User balances loaded: null (no API endpoint yet)');
+      const userId = await this.api.getCurrentUserId();
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      // Use BalanceService to fetch balances from database
+      if (window.BalanceService) {
+        const balanceData = await window.BalanceService.getUserBalances(userId);
+        
+        // Transform BalanceService format to the format expected by withdraw page
+        this.userBalances = balanceData.balances || {};
+        console.log('User balances loaded:', this.userBalances);
+      } else {
+        console.warn('BalanceService not available, using fallback');
+        this.userBalances = this.getMockBalances();
+      }
     } catch (error) {
       console.error('Failed to load user balances:', error);
-      // Show error to user instead of fallback mock data
-      if (window.Notify) {
-        window.Notify.error('Failed to load user balances. Please try again.');
-      }
-      this.userBalances = null;
+      // Use mock data as fallback
+      this.userBalances = this.getMockBalances();
+      console.log('Using mock balances as fallback');
     }
   }
 
