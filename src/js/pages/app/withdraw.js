@@ -116,12 +116,33 @@ class WithdrawPage {
 
   async loadUserBalances() {
     try {
-      // Use centralized balance fetch method
-      this.userBalances = await window.API.fetchBalances();
+      console.log('Loading user balances via BalanceService...');
+      
+      const userId = await window.API.getCurrentUserId();
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      // Use BalanceService to fetch balances from database
+      if (window.BalanceService) {
+        const balanceData = await window.BalanceService.getUserBalances(userId);
+        
+        // Transform BalanceService format to the format expected by withdraw page
+        this.userBalances = balanceData.balances || {};
+        console.log('User balances loaded:', this.userBalances);
+      } else {
+        console.warn('BalanceService not available, using fallback');
+        this.userBalances = await window.API.fetchBalances();
+      }
     } catch (error) {
       console.error('Failed to load user balances:', error);
-      // No fallback - show error state
-      this.userBalances = null;
+      // Fallback to API fetchBalances
+      try {
+        this.userBalances = await window.API.fetchBalances();
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        this.userBalances = null;
+      }
     }
   }
 
