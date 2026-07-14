@@ -1053,37 +1053,27 @@ class WithdrawPage {
       } catch (edgeError) {
         console.warn('Edge function failed due to CORS, falling back to direct REST API:', edgeError.message);
         
-        // Fallback: Query withdrawal_methods table to get correct method enum value
-        let withdrawalMethod = null;
-        try {
-          const { data: methodRecord } = await window.API.supabase
-            .from('withdrawal_methods')
-            .select('method')
-            .eq('id', methodData?.id)
-            .single();
-          
-          if (methodRecord && methodRecord.method) {
-            withdrawalMethod = methodRecord.method;
-          }
-        } catch (queryError) {
-          console.warn('Could not fetch method enum from withdrawal_methods:', queryError.message);
+        // Fallback: Map method_type from payout_methods to valid enum values for method column
+        let withdrawalMethod = 'bank'; // default fallback
+        if (methodData?.method_type === 'crypto_wallet') {
+          withdrawalMethod = 'cryptocurrency';
+        } else if (methodData?.method_type === 'bank_transfer') {
+          withdrawalMethod = 'bank_transfer';
+        } else if (methodData?.method_type === 'paypal') {
+          withdrawalMethod = 'paypal';
         }
 
-        // Build insert data
+        // Build insert data with method field
         const insertData = {
           user_id: this.currentUser.id,
           currency: this.selectedCurrency,
           amount: amount,
           fee_amount: feeAmount,
+          method: withdrawalMethod,
           method_id: methodData?.id,
           status: 'pending',
           created_at: new Date().toISOString()
         };
-
-        // Only add method field if we successfully retrieved it
-        if (withdrawalMethod) {
-          insertData.withdrawal_method = withdrawalMethod;
-        }
 
         const result = await window.API.supabase
           .from('withdrawals')
