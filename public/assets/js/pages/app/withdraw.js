@@ -1035,7 +1035,7 @@ class WithdrawPage {
         .single();
 
       if (error) {
-        // Try with withdrawal_method field if required (enum field name)
+        // Try with method field if required (enum field name is 'method')
         // Map method_type to valid enum values
         const methodTypeMap = {
           'crypto_wallet': 'crypto',
@@ -1050,7 +1050,7 @@ class WithdrawPage {
             user_id: this.currentUser.id,
             currency: this.selectedCurrency,
             amount: amount,
-            withdrawal_method: withdrawalMethod,
+            method: withdrawalMethod,
             method_id: methodData?.id,
             status: 'pending',
             created_at: new Date().toISOString()
