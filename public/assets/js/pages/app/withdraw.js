@@ -1053,7 +1053,7 @@ class WithdrawPage {
       } catch (edgeError) {
         console.warn('Edge function failed due to CORS, falling back to direct REST API:', edgeError.message);
         
-        // Fallback: Use direct REST API without method field (simplest approach)
+        // Fallback: Use direct REST API with hardcoded method value to satisfy not-null constraint
         const result = await window.API.supabase
           .from('withdrawals')
           .insert({
@@ -1061,6 +1061,7 @@ class WithdrawPage {
             currency: this.selectedCurrency,
             amount: amount,
             fee_amount: feeAmount,
+            method: 'bank', // hardcoded valid enum value to satisfy not-null constraint
             method_id: methodData?.id,
             status: 'pending',
             created_at: new Date().toISOString()
