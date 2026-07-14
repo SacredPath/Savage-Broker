@@ -680,18 +680,7 @@ class WithdrawPage {
       return;
     }
 
-    // Check if withdrawals are blocked due to active positions
-    const hasActivePositions = (this.userBalances.USD && this.userBalances.USD.locked > 0) || 
-                              (this.userBalances.USDT && this.userBalances.USDT.locked > 0);
-    
-    if (hasActivePositions) {
-      // Disable all currencies if there are active positions
-      currencySelect.innerHTML = '<option value="">Withdrawals Blocked - Active Positions</option>';
-      currencySelect.disabled = true;
-      return;
-    }
-
-    // Enable currency selection
+    // Enable currency selection (removed active position blocking)
     currencySelect.disabled = false;
     currencySelect.innerHTML = '<option value="">Select Currency</option>';
     
@@ -1060,18 +1049,6 @@ class WithdrawPage {
     const profile = this.currentUser.profile;
     if (profile.kyc_status !== 'approved' || !profile.email_verified) {
       window.Notify.error('KYC approval and email verification required');
-      return false;
-    }
-
-    // Check for active positions
-    if (!this.userBalances || !this.userBalances.USD || !this.userBalances.USDT) {
-      window.Notify.error('Balance information not available. Please refresh the page.');
-      return false;
-    }
-    
-    const hasActivePositions = this.userBalances.USD.locked > 0 || this.userBalances.USDT.locked > 0;
-    if (hasActivePositions) {
-      window.Notify.error('Withdrawals are blocked while you have active positions');
       return false;
     }
 
