@@ -314,8 +314,8 @@ class HomePage {
       return;
     }
 
-    // Show only first 3 items initially, rest collapsed
-    const visibleCount = 3;
+    // Auto-collapse: show only first 2 items initially, rest collapsed
+    const visibleCount = 2;
     const visibleActivity = activity.slice(0, visibleCount);
     const collapsedActivity = activity.slice(visibleCount);
 
@@ -362,6 +362,9 @@ class HomePage {
     ` : '';
 
     activityList.innerHTML = activityHTML + collapsedHTML + showMoreButton;
+    
+    // Store collapsed items reference for toggle
+    this.collapsedActivityItems = collapsedActivity.length;
   }
 
   toggleActivityCollapse() {
@@ -375,7 +378,7 @@ class HomePage {
     });
     
     if (showMoreBtn) {
-      showMoreBtn.textContent = isCollapsed ? 'Show Less' : `Show More (${collapsedItems.length})`;
+      showMoreBtn.textContent = isCollapsed ? 'Show Less' : `Show More (${this.collapsedActivityItems || collapsedItems.length})`;
     }
   }
 
