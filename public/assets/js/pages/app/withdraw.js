@@ -1026,8 +1026,8 @@ class WithdrawPage {
           user_id: this.currentUser.id,
           currency: this.selectedCurrency,
           amount: amount,
-          method: methodData?.method_type || 'manual',
-          method_details: methodData || {},
+          payout_method_id: methodData?.id,
+          payout_method_details: methodData || {},
           status: 'pending',
           created_at: new Date().toISOString()
         })
