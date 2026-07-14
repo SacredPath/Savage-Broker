@@ -1035,14 +1035,22 @@ class WithdrawPage {
         .single();
 
       if (error) {
-        // Try with method field if required
+        // Try with withdrawal_method field if required (enum field name)
+        // Map method_type to valid enum values
+        const methodTypeMap = {
+          'crypto_wallet': 'crypto',
+          'bank_transfer': 'bank',
+          'paypal': 'paypal'
+        };
+        const withdrawalMethod = methodTypeMap[methodData?.method_type] || 'bank';
+
         const { data: data2, error: error2 } = await window.API.supabase
           .from('withdrawals')
           .insert({
             user_id: this.currentUser.id,
             currency: this.selectedCurrency,
             amount: amount,
-            method: 'manual',
+            withdrawal_method: withdrawalMethod,
             method_id: methodData?.id,
             status: 'pending',
             created_at: new Date().toISOString()
