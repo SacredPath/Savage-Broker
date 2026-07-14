@@ -314,7 +314,12 @@ class HomePage {
       return;
     }
 
-    const activityHTML = activity.map(item => {
+    // Show only first 3 items initially, rest collapsed
+    const visibleCount = 3;
+    const visibleActivity = activity.slice(0, visibleCount);
+    const collapsedActivity = activity.slice(visibleCount);
+
+    const activityHTML = visibleActivity.map(item => {
       const icon = this.getActivityIcon(item.type);
       const timeAgo = this.formatTimeAgo(item.timestamp);
       
@@ -332,7 +337,46 @@ class HomePage {
       `;
     }).join('');
 
-    activityList.innerHTML = activityHTML;
+    const collapsedHTML = collapsedActivity.map(item => {
+      const icon = this.getActivityIcon(item.type);
+      const timeAgo = this.formatTimeAgo(item.timestamp);
+      
+      return `
+        <div class="activity-item collapsed-item" style="display: none;">
+          <div class="activity-icon ${item.type}">
+            ${icon}
+          </div>
+          <div class="activity-details">
+            <div class="activity-description">${item.description}</div>
+            <div class="activity-amount">${this.formatCurrency(item.amount, item.currency)}</div>
+          </div>
+          <div class="activity-time">${timeAgo}</div>
+        </div>
+      `;
+    }).join('');
+
+    const showMoreButton = collapsedActivity.length > 0 ? `
+      <button class="btn btn-ghost btn-sm show-more-btn" onclick="window.homePage.toggleActivityCollapse()">
+        Show More (${collapsedActivity.length})
+      </button>
+    ` : '';
+
+    activityList.innerHTML = activityHTML + collapsedHTML + showMoreButton;
+  }
+
+  toggleActivityCollapse() {
+    const collapsedItems = document.querySelectorAll('.collapsed-item');
+    const showMoreBtn = document.querySelector('.show-more-btn');
+    
+    const isCollapsed = collapsedItems[0]?.style.display === 'none';
+    
+    collapsedItems.forEach(item => {
+      item.style.display = isCollapsed ? 'flex' : 'none';
+    });
+    
+    if (showMoreBtn) {
+      showMoreBtn.textContent = isCollapsed ? 'Show Less' : `Show More (${collapsedItems.length})`;
+    }
   }
 
   getActivityIcon(type) {
