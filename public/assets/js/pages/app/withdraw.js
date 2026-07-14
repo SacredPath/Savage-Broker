@@ -926,10 +926,16 @@ class WithdrawPage {
     const feeAmount = amount * (settings.fee_percentage / 100);
     const netAmount = amount - feeAmount;
     
-    document.getElementById('withdrawal-amount').textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(amount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
-    document.getElementById('fee-percentage').textContent = settings.fee_percentage;
-    document.getElementById('fee-amount').textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(feeAmount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
-    document.getElementById('net-amount').textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(netAmount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
+    // Add null checks for fee preview elements
+    const withdrawalAmountEl = document.getElementById('withdrawal-amount');
+    const feePercentageEl = document.getElementById('fee-percentage');
+    const feeAmountEl = document.getElementById('fee-amount');
+    const netAmountEl = document.getElementById('net-amount');
+    
+    if (withdrawalAmountEl) withdrawalAmountEl.textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(amount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
+    if (feePercentageEl) feePercentageEl.textContent = settings.fee_percentage;
+    if (feeAmountEl) feeAmountEl.textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(feeAmount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
+    if (netAmountEl) netAmountEl.textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(netAmount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
     
     feePreview.style.display = 'block';
   }
