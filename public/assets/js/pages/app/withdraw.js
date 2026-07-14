@@ -1037,15 +1037,63 @@ class WithdrawPage {
       const feeAmount = 0;
       const totalDebit = amount + feeAmount;
 
-      // Use edge function which handles enum mapping correctly
-      const { data, error } = await window.API.fetchEdge('withdraw_create_request', {
-        method: 'POST',
-        body: {
+      // Try edge function first, fallback to direct REST API if CORS fails
+      let data, error;
+      try {
+        const result = await window.API.fetchEdge('withdraw_create_request', {
+          method: 'POST',
+          body: {
+            currency: this.selectedCurrency,
+            amount: amount,
+            method_id: methodData?.id
+          }
+        });
+        data = result.data;
+        error = result.error;
+      } catch (edgeError) {
+        console.warn('Edge function failed due to CORS, falling back to direct REST API:', edgeError.message);
+        
+        // Fallback: Query withdrawal_methods table to get correct method enum value
+        let withdrawalMethod = null;
+        try {
+          const { data: methodRecord } = await window.API.supabase
+            .from('withdrawal_methods')
+            .select('method')
+            .eq('id', methodData?.id)
+            .single();
+          
+          if (methodRecord && methodRecord.method) {
+            withdrawalMethod = methodRecord.method;
+          }
+        } catch (queryError) {
+          console.warn('Could not fetch method enum from withdrawal_methods:', queryError.message);
+        }
+
+        // Build insert data
+        const insertData = {
+          user_id: this.currentUser.id,
           currency: this.selectedCurrency,
           amount: amount,
-          method_id: methodData?.id
+          fee_amount: feeAmount,
+          method_id: methodData?.id,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        };
+
+        // Only add method field if we successfully retrieved it
+        if (withdrawalMethod) {
+          insertData.withdrawal_method = withdrawalMethod;
         }
-      });
+
+        const result = await window.API.supabase
+          .from('withdrawals')
+          .insert(insertData)
+          .select()
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) {
         throw error;
