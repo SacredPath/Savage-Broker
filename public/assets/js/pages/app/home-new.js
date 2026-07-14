@@ -279,8 +279,8 @@ class HomePage {
             activity.push({
               type: 'signal',
               title: signal.title,
-              description: `${signal.category} - ${signal.risk_level} risk`,
-              amount: signal.price,
+              description: `${signal.category} - ${signal.risk_level || 'Low'} risk`,
+              amount: signal.price || 0,
               currency: 'USD',
               timestamp: signal.created_at
             });
