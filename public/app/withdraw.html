@@ -12,7 +12,7 @@
     <link rel="shortcut icon" href="/icons/icon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.json">
     
-    <link rel="stylesheet" href="/css/ui-kit.css">
+    <link rel="stylesheet" href="/assets/css/ui-kit.css">
     <link rel="stylesheet" href="/css/pages.css">
     <link rel="stylesheet" href="/css/app-shell.css">
     <link rel="stylesheet" href="/assets/css/ui.css">
@@ -174,16 +174,19 @@
                 
                 <div class="withdraw-overview">
                     <div class="withdraw-card">
-                        <h3>Available Balance</h3>
-                        <div class="value" id="available-balance">$0.00</div>
+                        <h3>Available USD</h3>
+                        <div class="value" id="available-usd">$0</div>
+                        <div id="usd-status"></div>
                     </div>
                     <div class="withdraw-card">
-                        <h3>USD Balance</h3>
-                        <div class="value" id="usd-balance">$0.00</div>
+                        <h3>Available USDT</h3>
+                        <div class="value" id="available-usdt">₮0</div>
+                        <div id="usdt-status"></div>
                     </div>
                     <div class="withdraw-card">
-                        <h3>USDT Balance</h3>
-                        <div class="value" id="usdt-balance">$0.00</div>
+                        <h3>Daily Used</h3>
+                        <div class="value" id="daily-used">$0</div>
+                        <div id="limits-status"></div>
                     </div>
                 </div>
                 
