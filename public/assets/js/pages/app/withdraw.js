@@ -316,12 +316,11 @@ class WithdrawPage {
       
       const userId = await this.api.getCurrentUserId();
       
-      // Get user payout methods from database
+      // Get user withdrawal methods from database
       const { data, error } = await window.API.supabase
-        .from('payout_methods')
+        .from('withdrawal_methods')
         .select('*')
         .eq('user_id', userId)
-        .eq('is_active', true)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
 
