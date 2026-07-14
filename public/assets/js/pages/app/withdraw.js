@@ -719,7 +719,7 @@ class WithdrawPage {
       amountCurrency.textContent = this.selectedCurrency === 'USD' ? '$' : '₮';
     }
     
-    // Populate method dropdown with user's saved methods
+    // Populate method dropdown with user's saved methods for selected currency
     this.populateMethodDropdown();
     
     // Enable amount input
@@ -731,6 +731,13 @@ class WithdrawPage {
       const minAmount = Math.min(...methodsForCurrency.map(m => m.min_amount || 0));
       amountInput.min = minAmount;
       amountInput.placeholder = `${minAmount.toFixed(2)} minimum`;
+      
+      // Auto-select the default method if available
+      const defaultMethod = methodsForCurrency.find(m => m.is_default);
+      if (defaultMethod) {
+        methodSelect.value = defaultMethod.id;
+        this.handleMethodChange();
+      }
     } else {
       amountInput.min = 1;
       amountInput.placeholder = '0.00 minimum';
