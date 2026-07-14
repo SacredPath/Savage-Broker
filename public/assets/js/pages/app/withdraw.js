@@ -1125,10 +1125,12 @@ class WithdrawPage {
     }
 
     // Check daily limits
-    const dailyLimit = this.dailyLimits[this.selectedCurrency];
-    if (dailyLimit.used + amount > dailyLimit.limit) {
-      window.Notify.error(`Daily withdrawal limit exceeded. You can withdraw ${this.selectedCurrency} ${dailyLimit.remaining} more today.`);
-      return false;
+    if (this.dailyLimits && this.dailyLimits[this.selectedCurrency]) {
+      const dailyLimit = this.dailyLimits[this.selectedCurrency];
+      if (dailyLimit.used + amount > dailyLimit.limit) {
+        window.Notify.error(`Daily withdrawal limit exceeded. You can withdraw ${this.selectedCurrency} ${dailyLimit.remaining} more today.`);
+        return false;
+      }
     }
 
     return true;
