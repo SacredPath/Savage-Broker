@@ -72,7 +72,7 @@ class HomePage {
 
   async loadDashboardData() {
     try {
-      console.log('Loading dashboard data via REST API...');
+      console.log('Loading dashboard data via BalanceService...');
       
       // Get current user ID
       const userId = await this.api.getCurrentUserId();
@@ -80,17 +80,29 @@ class HomePage {
         throw new Error('User not authenticated');
       }
 
-      // Fetch real data via REST API
-      const [portfolio, prices] = await Promise.all([
-        this.api.getPortfolioSnapshot(userId),
-        this.api.getMarketPrices()
-      ]);
+      // Use BalanceService as single source of truth for balances
+      if (!window.BalanceService) {
+        throw new Error('BalanceService not available');
+      }
+
+      const balanceData = await window.BalanceService.getUserBalances(userId);
+      
+      // Load portfolio data for invested amount and profit
+      let portfolioData = null;
+      try {
+        portfolioData = await this.api.getPortfolioSnapshot(userId);
+      } catch (error) {
+        console.warn('Failed to load portfolio data:', error);
+      }
 
       // Transform data for dashboard
+      const totalBalanceUSD = balanceData.total_usd || 0;
+      const investedAmount = portfolioData?.summary?.total_value || 0;
+      
       const dashboardData = {
-        totalBalance: portfolio.summary.total_balance || 0,
-        investedAmount: portfolio.summary.total_value || 0,
-        totalProfit: (portfolio.summary.total_balance || 0) - (portfolio.summary.total_value || 0),
+        totalBalance: totalBalanceUSD,
+        investedAmount: investedAmount,
+        totalProfit: totalBalanceUSD - investedAmount,
         activeSignals: 3 // TODO: Replace with actual signals count when available
       };
 
