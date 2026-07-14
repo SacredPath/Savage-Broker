@@ -1020,6 +1020,17 @@ class WithdrawPage {
         withdrawButton.textContent = 'Processing...';
       }
 
+      // Calculate fee (0% for now)
+      const feeAmount = 0;
+
+      // Map method_type to valid enum values
+      const methodTypeMap = {
+        'crypto_wallet': 'crypto',
+        'bank_transfer': 'bank',
+        'paypal': 'paypal'
+      };
+      const withdrawalMethod = methodTypeMap[methodData?.method_type] || 'bank';
+
       // Use Supabase REST API directly - no CORS issues
       const { data, error } = await window.API.supabase
         .from('withdrawals')
@@ -1027,6 +1038,8 @@ class WithdrawPage {
           user_id: this.currentUser.id,
           currency: this.selectedCurrency,
           amount: amount,
+          fee_amount: feeAmount,
+          method: withdrawalMethod,
           method_id: methodData?.id,
           status: 'pending',
           created_at: new Date().toISOString()
@@ -1035,32 +1048,7 @@ class WithdrawPage {
         .single();
 
       if (error) {
-        // Try with method field if required (enum field name is 'method')
-        // Map method_type to valid enum values
-        const methodTypeMap = {
-          'crypto_wallet': 'crypto',
-          'bank_transfer': 'bank',
-          'paypal': 'paypal'
-        };
-        const withdrawalMethod = methodTypeMap[methodData?.method_type] || 'bank';
-
-        const { data: data2, error: error2 } = await window.API.supabase
-          .from('withdrawals')
-          .insert({
-            user_id: this.currentUser.id,
-            currency: this.selectedCurrency,
-            amount: amount,
-            method: withdrawalMethod,
-            method_id: methodData?.id,
-            status: 'pending',
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (error2) {
-          throw error2;
-        }
+        throw error;
       }
 
       window.Notify.success('Withdrawal request submitted successfully! Your request is pending admin approval.');
