@@ -801,6 +801,11 @@ class WithdrawPage {
     const methodDetails = document.getElementById('method-details');
     const methodDetailsContent = document.getElementById('method-details-content');
     
+    if (!methodDetails || !methodDetailsContent) {
+      console.warn('Method details elements not found in DOM');
+      return;
+    }
+    
     if (!this.selectedMethodData) {
       methodDetails.style.display = 'none';
       return;
