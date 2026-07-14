@@ -1037,32 +1037,15 @@ class WithdrawPage {
       const feeAmount = 0;
       const totalDebit = amount + feeAmount;
 
-      // Map method_type from payout_methods to valid enum values
-      // Based on the database schema, valid enum values are likely: 'bank', 'crypto', 'paypal'
-      let withdrawalMethod = 'bank'; // default fallback
-      if (methodData?.method_type === 'crypto_wallet') {
-        withdrawalMethod = 'crypto';
-      } else if (methodData?.method_type === 'bank_transfer') {
-        withdrawalMethod = 'bank';
-      } else if (methodData?.method_type === 'paypal') {
-        withdrawalMethod = 'paypal';
-      }
-
-      // Use Supabase REST API directly - no CORS issues
-      const { data, error } = await window.API.supabase
-        .from('withdrawals')
-        .insert({
-          user_id: this.currentUser.id,
+      // Use edge function which handles enum mapping correctly
+      const { data, error } = await window.API.fetchEdge('withdraw_create_request', {
+        method: 'POST',
+        body: {
           currency: this.selectedCurrency,
           amount: amount,
-          fee_amount: feeAmount,
-          method: withdrawalMethod,
-          method_id: methodData?.id,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+          method_id: methodData?.id
+        }
+      });
 
       if (error) {
         throw error;
