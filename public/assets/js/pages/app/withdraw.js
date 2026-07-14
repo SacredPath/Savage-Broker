@@ -1052,12 +1052,11 @@ class WithdrawPage {
         throw error;
       }
 
-      // Deduct from available balance (wallet_balances uses 'available' column)
+      // Deduct from available balance (total is a generated column, cannot be updated)
       const { error: balanceError } = await window.API.supabase
         .from('wallet_balances')
         .update({
-          available: this.userBalances[this.selectedCurrency].available - totalDebit,
-          total: this.userBalances[this.selectedCurrency].total - totalDebit
+          available: this.userBalances[this.selectedCurrency].available - totalDebit
         })
         .eq('user_id', this.currentUser.id)
         .eq('currency', this.selectedCurrency);
