@@ -1020,25 +1020,13 @@ class WithdrawPage {
         withdrawButton.textContent = 'Processing...';
       }
 
-      // Calculate fee (0% for now)
-      const feeAmount = 0;
-
-      // Map method_type to valid enum values for withdrawals table
-      const methodTypeMap = {
-        'crypto_wallet': 'crypto',
-        'bank_transfer': 'bank',
-        'paypal': 'paypal'
-      };
-      const withdrawalMethod = methodTypeMap[methodData?.method_type] || 'manual';
-
+      // Simple direct insert - minimal fields
       const { data, error } = await window.API.supabase
         .from('withdrawals')
         .insert({
           user_id: this.currentUser.id,
           currency: this.selectedCurrency,
           amount: amount,
-          fee_amount: feeAmount,
-          method: withdrawalMethod,
           method_id: methodData?.id,
           status: 'pending',
           created_at: new Date().toISOString()
@@ -1047,7 +1035,25 @@ class WithdrawPage {
         .single();
 
       if (error) {
-        throw error;
+        console.error('Insert error:', error);
+        // If method field is required, try with it
+        const { data: data2, error: error2 } = await window.API.supabase
+          .from('withdrawals')
+          .insert({
+            user_id: this.currentUser.id,
+            currency: this.selectedCurrency,
+            amount: amount,
+            method: 'manual',
+            method_id: methodData?.id,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (error2) {
+          throw error2;
+        }
       }
 
       window.Notify.success('Withdrawal request submitted successfully! Your request is pending admin approval.');
