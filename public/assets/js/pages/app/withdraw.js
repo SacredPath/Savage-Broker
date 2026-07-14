@@ -1031,15 +1031,8 @@ class WithdrawPage {
       const feeAmount = 0;
       const totalDebit = amount + feeAmount;
 
-      // Map method_type to valid enum values
-      const methodTypeMap = {
-        'crypto_wallet': 'crypto',
-        'bank_transfer': 'bank',
-        'paypal': 'paypal'
-      };
-      const withdrawalMethod = methodTypeMap[methodData?.method_type] || 'bank';
-
       // Use Supabase REST API directly - no CORS issues
+      // Remove method field to avoid enum validation issues
       const { data, error } = await window.API.supabase
         .from('withdrawals')
         .insert({
@@ -1047,7 +1040,6 @@ class WithdrawPage {
           currency: this.selectedCurrency,
           amount: amount,
           fee_amount: feeAmount,
-          method: withdrawalMethod,
           method_id: methodData?.id,
           status: 'pending',
           created_at: new Date().toISOString()
