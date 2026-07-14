@@ -1030,7 +1030,7 @@ class WithdrawPage {
           currency: this.selectedCurrency,
           amount: amount,
           fee_amount: feeAmount,
-          method: methodData?.method_type || 'manual',
+          method: 'manual',
           method_id: methodData?.id,
           status: 'pending',
           created_at: new Date().toISOString()
