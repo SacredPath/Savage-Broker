@@ -918,7 +918,7 @@ class WithdrawPage {
     const amount = parseFloat(amountInput.value);
     
     if (!amount || amount <= 0 || !this.selectedCurrency) {
-      feePreview.style.display = 'none';
+      if (feePreview) feePreview.style.display = 'none';
       return;
     }
 
@@ -937,7 +937,7 @@ class WithdrawPage {
     if (feeAmountEl) feeAmountEl.textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(feeAmount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
     if (netAmountEl) netAmountEl.textContent = `${this.selectedCurrency === 'USD' ? '$' : '₮'}${this.formatMoney(netAmount, this.selectedCurrency === 'USDT' ? 6 : 2)}`;
     
-    feePreview.style.display = 'block';
+    if (feePreview) feePreview.style.display = 'block';
   }
 
   openMethodModal() {
@@ -1037,8 +1037,18 @@ class WithdrawPage {
       const feeAmount = 0;
       const totalDebit = amount + feeAmount;
 
+      // Map method_type from payout_methods to valid enum values
+      // Based on the database schema, valid enum values are likely: 'bank', 'crypto', 'paypal'
+      let withdrawalMethod = 'bank'; // default fallback
+      if (methodData?.method_type === 'crypto_wallet') {
+        withdrawalMethod = 'crypto';
+      } else if (methodData?.method_type === 'bank_transfer') {
+        withdrawalMethod = 'bank';
+      } else if (methodData?.method_type === 'paypal') {
+        withdrawalMethod = 'paypal';
+      }
+
       // Use Supabase REST API directly - no CORS issues
-      // Remove method field to avoid enum validation issues
       const { data, error } = await window.API.supabase
         .from('withdrawals')
         .insert({
@@ -1046,6 +1056,7 @@ class WithdrawPage {
           currency: this.selectedCurrency,
           amount: amount,
           fee_amount: feeAmount,
+          method: withdrawalMethod,
           method_id: methodData?.id,
           status: 'pending',
           created_at: new Date().toISOString()
