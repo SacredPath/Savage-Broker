@@ -1020,19 +1020,14 @@ class WithdrawPage {
         withdrawButton.textContent = 'Processing...';
       }
 
-      const { data, error } = await window.API.supabase
-        .from('withdrawal_requests')
-        .insert({
-          user_id: this.currentUser.id,
+      const { data, error } = await window.API.fetchEdge('withdraw_create_request', {
+        method: 'POST',
+        body: {
           currency: this.selectedCurrency,
           amount: amount,
-          payout_method_id: methodData?.id,
-          payout_method_details: methodData || {},
-          status: 'pending',
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+          method_id: methodData?.id
+        }
+      });
 
       if (error) {
         throw error;
