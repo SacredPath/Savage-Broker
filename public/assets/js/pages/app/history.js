@@ -104,10 +104,88 @@ class HistoryPage {
         throw new Error('User not authenticated');
       }
 
-      // Load unified history from database
-      const data = await this.api.getUnifiedHistory(userId);
-      
-      this.historyData = data;
+      // Load unified history from database (combine transactions, withdrawals, and positions)
+      const historyData = [];
+
+      // Load transactions (deposits)
+      try {
+        const { data: transactions } = await this.api.supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (transactions) {
+          transactions.forEach(tx => {
+            historyData.push({
+              id: tx.id,
+              type: tx.type === 'deposit' ? 'deposit' : 'transaction',
+              description: tx.type === 'deposit' ? 'Deposit' : 'Transaction',
+              amount: tx.amount,
+              currency: tx.currency,
+              status: tx.status,
+              created_at: tx.created_at
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to load transactions:', error.message);
+      }
+
+      // Load withdrawals
+      try {
+        const { data: withdrawals } = await this.api.supabase
+          .from('withdrawals')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (withdrawals) {
+          withdrawals.forEach(wd => {
+            historyData.push({
+              id: wd.id,
+              type: 'withdrawal',
+              description: 'Withdrawal',
+              amount: wd.amount,
+              currency: wd.currency,
+              status: wd.status,
+              created_at: wd.created_at
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to load withdrawals:', error.message);
+      }
+
+      // Load positions
+      try {
+        const { data: positions } = await this.api.supabase
+          .from('positions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (positions) {
+          positions.forEach(pos => {
+            historyData.push({
+              id: pos.id,
+              type: 'position',
+              description: `Position: ${pos.asset_symbol}`,
+              amount: pos.principal_usd,
+              currency: 'USD',
+              status: pos.status,
+              created_at: pos.created_at
+            });
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to load positions:', error.message);
+      }
+
+      // Sort by date
+      historyData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      this.historyData = historyData;
       console.log('History data loaded:', this.historyData.length, 'items');
     } catch (error) {
       console.error('Failed to load history data:', error);
