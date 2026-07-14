@@ -651,15 +651,20 @@ class WithdrawPage {
     }
 
     if (limitsStatus) {
-      const totalLimit = this.withdrawalSettings.currencies.USD.daily_limit + this.withdrawalSettings.currencies.USDT.daily_limit;
-      const totalUsed = this.dailyLimits.USD.used + this.dailyLimits.USDT.used;
-      
-      if (totalUsed >= totalLimit) {
-        limitsStatus.textContent = 'Daily Limit Reached';
-        limitsStatus.className = 'balance-status locked';
-      } else {
-        limitsStatus.textContent = 'Within Limits';
+      if (!this.dailyLimits) {
+        limitsStatus.textContent = 'No Limits Set';
         limitsStatus.className = 'balance-status available';
+      } else {
+        const totalLimit = this.withdrawalSettings.currencies.USD.daily_limit + this.withdrawalSettings.currencies.USDT.daily_limit;
+        const totalUsed = (this.dailyLimits.USD?.used || 0) + (this.dailyLimits.USDT?.used || 0);
+        
+        if (totalUsed >= totalLimit) {
+          limitsStatus.textContent = 'Daily Limit Reached';
+          limitsStatus.className = 'balance-status locked';
+        } else {
+          limitsStatus.textContent = 'Within Limits';
+          limitsStatus.className = 'balance-status available';
+        }
       }
     }
   }
