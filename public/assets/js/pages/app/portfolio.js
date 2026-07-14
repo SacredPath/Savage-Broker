@@ -303,31 +303,52 @@ class PortfolioPage {
     const positions = this.portfolioData.positions;
     let allocationData = [];
 
+    // Include wallet balances in allocation
+    if (this.walletData && this.walletData.balances) {
+      Object.entries(this.walletData.balances).forEach(([currency, balance]) => {
+        if (balance.total > 0) {
+          allocationData.push({
+            symbol: currency,
+            name: currency === 'USD' ? 'US Dollar' : currency === 'USDT' ? 'Tether' : currency,
+            value: balance.total,
+            percentage: 0
+          });
+        }
+      });
+    }
+
+    // Add positions if available
     switch (this.allocationView) {
       case 'principal':
-        allocationData = positions.map(pos => ({
-          symbol: pos.asset_symbol,
-          name: pos.asset_name,
-          value: pos.quantity * pos.average_cost,
-          percentage: 0
-        }));
+        positions.forEach(pos => {
+          allocationData.push({
+            symbol: pos.asset_symbol,
+            name: pos.asset_name,
+            value: pos.quantity * pos.average_cost,
+            percentage: 0
+          });
+        });
         break;
       case 'equity':
-        allocationData = positions.map(pos => ({
-          symbol: pos.asset_symbol,
-          name: pos.asset_name,
-          value: pos.market_value,
-          percentage: 0
-        }));
+        positions.forEach(pos => {
+          allocationData.push({
+            symbol: pos.asset_symbol,
+            name: pos.asset_name,
+            value: pos.market_value,
+            percentage: 0
+          });
+        });
         break;
       case 'both':
-        allocationData = positions.map(pos => ({
-          symbol: pos.asset_symbol,
-          name: pos.asset_name,
-          principal: pos.quantity * pos.average_cost,
-          equity: pos.market_value,
-          percentage: 0
-        }));
+        positions.forEach(pos => {
+          allocationData.push({
+            symbol: pos.asset_symbol,
+            name: pos.asset_name,
+            principal: pos.quantity * pos.average_cost,
+            equity: pos.market_value,
+            percentage: 0
+          });
+        });
         break;
     }
 
