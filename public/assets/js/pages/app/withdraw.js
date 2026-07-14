@@ -524,6 +524,7 @@ class WithdrawPage {
     const currencySelect = document.getElementById('currency-select');
     const methodSelect = document.getElementById('method-select');
     const amountInput = document.getElementById('amount-input');
+    const withdrawButton = document.getElementById('btn-withdraw');
 
     if (currencySelect) {
       currencySelect.addEventListener('change', () => this.handleCurrencyChange());
@@ -533,6 +534,9 @@ class WithdrawPage {
     }
     if (amountInput) {
       amountInput.addEventListener('input', () => this.updateAmountDisplay());
+    }
+    if (withdrawButton) {
+      withdrawButton.addEventListener('click', () => this.submitWithdrawal());
     }
 
     console.log('Forms setup complete');
@@ -1005,27 +1009,36 @@ class WithdrawPage {
     if (!this.validateWithdrawal()) return;
 
     const amount = parseFloat(document.getElementById('amount-input').value);
-    const methodKey = `${this.selectedCurrency}_${this.selectedMethod}`;
-    const methodDetails = this.userMethods[methodKey];
+    const methodSelect = document.getElementById('method-select');
+    const selectedOption = methodSelect.options[methodSelect.selectedIndex];
+    const methodData = selectedOption ? JSON.parse(selectedOption.dataset.method || '{}') : null;
 
     try {
-      this.setButtonLoading('submit-withdrawal', true);
+      const withdrawButton = document.getElementById('btn-withdraw');
+      if (withdrawButton) {
+        withdrawButton.disabled = true;
+        withdrawButton.textContent = 'Processing...';
+      }
 
-      const { data, error } = await window.API.fetchEdge('withdraw_create_request', {
-        method: 'POST',
-        body: {
+      const { data, error } = await window.API.supabase
+        .from('withdrawal_requests')
+        .insert({
+          user_id: this.currentUser.id,
           currency: this.selectedCurrency,
           amount: amount,
-          method: this.selectedMethod,
-          method_details: methodDetails
-        }
-      });
+          method: methodData?.method_type || 'manual',
+          method_details: methodData || {},
+          status: 'pending',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
       if (error) {
         throw error;
       }
 
-      window.Notify.success('Withdrawal request submitted successfully! Your request will be reviewed by our team.');
+      window.Notify.success('Withdrawal request submitted successfully! Your request is pending admin approval.');
 
       // Reset form
       this.resetForm();
@@ -1037,7 +1050,11 @@ class WithdrawPage {
       console.error('Failed to submit withdrawal:', error);
       window.Notify.error(error.message || 'Failed to submit withdrawal request');
     } finally {
-      this.setButtonLoading('submit-withdrawal', false);
+      const withdrawButton = document.getElementById('btn-withdraw');
+      if (withdrawButton) {
+        withdrawButton.disabled = false;
+        withdrawButton.textContent = 'Withdraw';
+      }
     }
   }
 
