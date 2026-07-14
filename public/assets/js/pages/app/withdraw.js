@@ -1020,14 +1020,23 @@ class WithdrawPage {
         withdrawButton.textContent = 'Processing...';
       }
 
-      const { data, error } = await window.API.fetchEdge('withdraw_create_request', {
-        method: 'POST',
-        body: {
+      // Calculate fee (0% for now)
+      const feeAmount = 0;
+
+      const { data, error } = await window.API.supabase
+        .from('withdrawals')
+        .insert({
+          user_id: this.currentUser.id,
           currency: this.selectedCurrency,
           amount: amount,
-          method_id: methodData?.id
-        }
-      });
+          fee_amount: feeAmount,
+          method: methodData?.method_type || 'manual',
+          method_id: methodData?.id,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
       if (error) {
         throw error;
