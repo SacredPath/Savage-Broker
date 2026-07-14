@@ -53,6 +53,18 @@
           "sizes": "any"
         }
       ]
+    },
+    {
+      "name": "Withdrawals",
+      "short_name": "Withdrawals",
+      "description": "Manage your withdrawals and payouts",
+      "url": "/app/withdraw.html",
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any"
+        }
+      ]
     }
   ],
   "screenshots": [
