@@ -601,18 +601,24 @@ class WithdrawPage {
     const limitsStatus = document.getElementById('limits-status');
 
     // Guard against missing balance data
-    if (!this.userBalances || !this.userBalances.USD || !this.userBalances.USDT) {
+    if (!this.userBalances) {
       if (availableUSD) availableUSD.textContent = '$0';
       if (availableUSDT) availableUSDT.textContent = '₮0';
       return;
     }
 
-    if (availableUSD) {
+    // Display USD balance if available
+    if (availableUSD && this.userBalances.USD) {
       availableUSD.textContent = `$${this.formatMoney(this.userBalances.USD.available)}`;
+    } else if (availableUSD) {
+      availableUSD.textContent = '$0';
     }
 
-    if (availableUSDT) {
+    // Display USDT balance if available
+    if (availableUSDT && this.userBalances.USDT) {
       availableUSDT.textContent = `₮${this.formatMoney(this.userBalances.USDT.available, 6)}`;
+    } else if (availableUSDT) {
+      availableUSDT.textContent = '₮0';
     }
 
     if (dailyUsed && this.dailyLimits && this.dailyLimits.USD && this.dailyLimits.USDT) {
