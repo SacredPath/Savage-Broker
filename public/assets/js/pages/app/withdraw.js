@@ -1211,13 +1211,19 @@ class WithdrawPage {
 
   resetForm() {
     // Reset form inputs
-    document.getElementById('currency-select').value = '';
-    document.getElementById('method-select').value = '';
-    document.getElementById('amount-input').value = '';
+    const currencySelect = document.getElementById('currency-select');
+    const methodSelect = document.getElementById('method-select');
+    const amountInput = document.getElementById('amount-input');
+    
+    if (currencySelect) currencySelect.value = '';
+    if (methodSelect) methodSelect.value = '';
+    if (amountInput) amountInput.value = '';
     
     // Hide method details and fee preview
-    document.getElementById('method-details').style.display = 'none';
-    document.getElementById('fee-preview').style.display = 'none';
+    const methodDetails = document.getElementById('method-details');
+    const feePreview = document.getElementById('fee-preview');
+    if (methodDetails) methodDetails.style.display = 'none';
+    if (feePreview) feePreview.style.display = 'none';
     
     // Reset selections
     this.selectedCurrency = null;
