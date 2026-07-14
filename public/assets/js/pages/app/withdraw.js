@@ -316,11 +316,12 @@ class WithdrawPage {
       
       const userId = await this.api.getCurrentUserId();
       
-      // Get user withdrawal methods from database
+      // Get user payout methods from database
       const { data, error } = await window.API.supabase
-        .from('withdrawal_methods')
+        .from('payout_methods')
         .select('*')
         .eq('user_id', userId)
+        .eq('is_active', true)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -1022,6 +1023,14 @@ class WithdrawPage {
       // Calculate fee (0% for now)
       const feeAmount = 0;
 
+      // Map method_type to valid enum values for withdrawals table
+      const methodTypeMap = {
+        'crypto_wallet': 'crypto',
+        'bank_transfer': 'bank',
+        'paypal': 'paypal'
+      };
+      const withdrawalMethod = methodTypeMap[methodData?.method_type] || 'manual';
+
       const { data, error } = await window.API.supabase
         .from('withdrawals')
         .insert({
@@ -1029,7 +1038,7 @@ class WithdrawPage {
           currency: this.selectedCurrency,
           amount: amount,
           fee_amount: feeAmount,
-          method: methodData?.method || 'manual',
+          method: withdrawalMethod,
           method_id: methodData?.id,
           status: 'pending',
           created_at: new Date().toISOString()
