@@ -1020,40 +1020,19 @@ class WithdrawPage {
         withdrawButton.textContent = 'Processing...';
       }
 
-      // Simple direct insert - minimal fields
-      const { data, error } = await window.API.supabase
-        .from('withdrawals')
-        .insert({
-          user_id: this.currentUser.id,
+      // Use edge function for proper business logic (fees, limits, ledger)
+      const { data, error } = await window.API.fetchEdge('withdraw_create_request', {
+        method: 'POST',
+        body: {
           currency: this.selectedCurrency,
           amount: amount,
-          method_id: methodData?.id,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+          method_id: methodData?.id
+        }
+      });
 
       if (error) {
-        console.error('Insert error:', error);
-        // If method field is required, try with it
-        const { data: data2, error: error2 } = await window.API.supabase
-          .from('withdrawals')
-          .insert({
-            user_id: this.currentUser.id,
-            currency: this.selectedCurrency,
-            amount: amount,
-            method: 'manual',
-            method_id: methodData?.id,
-            status: 'pending',
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-        
-        if (error2) {
-          throw error2;
-        }
+        console.error('Edge function error:', error);
+        throw error;
       }
 
       window.Notify.success('Withdrawal request submitted successfully! Your request is pending admin approval.');
