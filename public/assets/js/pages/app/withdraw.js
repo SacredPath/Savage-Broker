@@ -710,8 +710,10 @@ class WithdrawPage {
       return;
     }
 
-    // Update currency symbol
-    amountCurrency.textContent = this.selectedCurrency === 'USD' ? '$' : '₮';
+    // Update currency symbol if element exists
+    if (amountCurrency) {
+      amountCurrency.textContent = this.selectedCurrency === 'USD' ? '$' : '₮';
+    }
     
     // Populate method dropdown with user's saved methods
     this.populateMethodDropdown();
