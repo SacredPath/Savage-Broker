@@ -481,32 +481,50 @@ class PortfolioPage {
     const tbody = document.getElementById('positions-tbody');
     if (!tbody) return;
 
+    // Check if there are positions
+    if (!this.portfolioData.positions || this.portfolioData.positions.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">No active positions. Start investing to see your positions here.</td></tr>';
+      return;
+    }
+
     tbody.innerHTML = this.portfolioData.positions.map(position => {
-      const priceData = this.marketPrices[position.asset_symbol];
+      // Transform position data to match expected field names
+      const transformedPosition = {
+        asset_name: position.asset_name || position.investment_tiers?.name || 'Unknown Asset',
+        asset_symbol: position.asset_symbol || position.investment_tiers?.symbol || 'UNK',
+        quantity: position.quantity || position.amount || 0,
+        average_cost: position.average_cost || position.principal_usd / (position.quantity || 1) || 0,
+        current_price: position.current_price || position.current_price_usd || position.principal_usd / (position.quantity || 1) || 0,
+        market_value: position.market_value || position.amount || position.principal_usd || 0,
+        unrealized_pl: position.unrealized_pl || position.accrued_roi || 0,
+        unrealized_pl_percent: position.unrealized_pl_percent || (position.accrued_roi && position.principal_usd ? (position.accrued_roi / position.principal_usd) * 100 : 0)
+      };
+
+      const priceData = this.marketPrices[transformedPosition.asset_symbol];
       const priceChange = priceData ? priceData.change : 0;
       const priceChangePercent = priceData ? priceData.change_percent : 0;
       
       return '<tr>' +
         '<td>' +
-          '<div class="asset-name">' + position.asset_name + '</div>' +
-          '<div class="asset-symbol">' + position.asset_symbol + '</div>' +
+          '<div class="asset-name">' + transformedPosition.asset_name + '</div>' +
+          '<div class="asset-symbol">' + transformedPosition.asset_symbol + '</div>' +
         '</td>' +
-        '<td>' + this.formatQuantity(position.quantity, position.asset_symbol) + '</td>' +
-        '<td>$' + this.formatMoney(position.average_cost) + '</td>' +
+        '<td>' + this.formatQuantity(transformedPosition.quantity, transformedPosition.asset_symbol) + '</td>' +
+        '<td>$' + this.formatMoney(transformedPosition.average_cost) + '</td>' +
         '<td>' +
           '<div class="price-info">' +
-            '<div class="current-price">$' + this.formatMoney(position.current_price) + '</div>' +
+            '<div class="current-price">$' + this.formatMoney(transformedPosition.current_price) + '</div>' +
             '<div class="price-change ' + (priceChange >= 0 ? 'positive' : 'negative') + '">' +
               (priceChange >= 0 ? '+' : '') + '$' + this.formatMoney(priceChange) + ' (' + (priceChangePercent >= 0 ? '+' : '') + priceChangePercent.toFixed(2) + '%)' +
             '</div>' +
           '</div>' +
         '</td>' +
-        '<td>$' + this.formatMoney(position.market_value) + '</td>' +
-        '<td class="' + (position.unrealized_pl >= 0 ? 'profit-positive' : 'profit-negative') + '">' +
-          (position.unrealized_pl >= 0 ? '+' : '') + '$' + this.formatMoney(Math.abs(position.unrealized_pl)) +
+        '<td>$' + this.formatMoney(transformedPosition.market_value) + '</td>' +
+        '<td class="' + (transformedPosition.unrealized_pl >= 0 ? 'profit-positive' : 'profit-negative') + '">' +
+          (transformedPosition.unrealized_pl >= 0 ? '+' : '') + '$' + this.formatMoney(Math.abs(transformedPosition.unrealized_pl)) +
         '</td>' +
-        '<td class="' + (position.unrealized_pl_percent >= 0 ? 'profit-positive' : 'profit-negative') + '">' +
-          (position.unrealized_pl_percent >= 0 ? '+' : '') + position.unrealized_pl_percent.toFixed(2) + '%' +
+        '<td class="' + (transformedPosition.unrealized_pl_percent >= 0 ? 'profit-positive' : 'profit-negative') + '">' +
+          (transformedPosition.unrealized_pl_percent >= 0 ? '+' : '') + transformedPosition.unrealized_pl_percent.toFixed(2) + '%' +
         '</td>' +
       '</tr>';
     }).join('');
