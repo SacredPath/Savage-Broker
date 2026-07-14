@@ -1059,6 +1059,12 @@ class WithdrawPage {
   }
 
   validateWithdrawal() {
+    console.log('Validating withdrawal...');
+    console.log('Current user:', this.currentUser);
+    console.log('Selected currency:', this.selectedCurrency);
+    console.log('Selected method:', this.selectedMethod);
+    console.log('Selected method data:', this.selectedMethodData);
+
     // Check KYC and email verification
     if (!this.currentUser.profile) {
       window.Notify.error('KYC verification required');
@@ -1083,11 +1089,9 @@ class WithdrawPage {
       return false;
     }
 
-    // Validate method details
-    const methodKey = `${this.selectedCurrency}_${this.selectedMethod}`;
-    const methodDetails = this.userMethods[methodKey];
-    if (!methodDetails) {
-      window.Notify.error('Please add withdrawal method details');
+    // Validate method data
+    if (!this.selectedMethodData) {
+      window.Notify.error('Please select a valid withdrawal method');
       return false;
     }
 
