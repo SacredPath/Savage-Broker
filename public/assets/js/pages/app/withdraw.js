@@ -1022,6 +1022,7 @@ class WithdrawPage {
 
       // Calculate fee (0% for now)
       const feeAmount = 0;
+      const totalDebit = amount + feeAmount;
 
       // Map method_type to valid enum values
       const methodTypeMap = {
@@ -1051,13 +1052,44 @@ class WithdrawPage {
         throw error;
       }
 
+      // Deduct from balance
+      const { error: balanceError } = await window.API.supabase
+        .from('wallet_balances')
+        .update({
+          balance: this.userBalances[this.selectedCurrency].balance - totalDebit
+        })
+        .eq('user_id', this.currentUser.id)
+        .eq('currency', this.selectedCurrency);
+
+      if (balanceError) {
+        console.error('Failed to deduct from balance:', balanceError);
+      }
+
+      // Create ledger entry
+      const { error: ledgerError } = await window.API.supabase
+        .from('wallet_ledger')
+        .insert({
+          user_id: this.currentUser.id,
+          currency: this.selectedCurrency,
+          amount: -totalDebit,
+          reason: 'withdrawal',
+          ref_table: 'withdrawals',
+          ref_id: data.id,
+          created_at: new Date().toISOString()
+        });
+
+      if (ledgerError) {
+        console.error('Failed to create ledger entry:', ledgerError);
+      }
+
       window.Notify.success('Withdrawal request submitted successfully! Your request is pending admin approval.');
 
       // Reset form
       this.resetForm();
 
-      // Reload requests
+      // Reload requests and balances
       await this.loadWithdrawalRequests();
+      await this.loadUserBalances();
 
     } catch (error) {
       console.error('Failed to submit withdrawal:', error);
