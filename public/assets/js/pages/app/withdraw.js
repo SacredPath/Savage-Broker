@@ -1053,31 +1053,18 @@ class WithdrawPage {
       } catch (edgeError) {
         console.warn('Edge function failed due to CORS, falling back to direct REST API:', edgeError.message);
         
-        // Fallback: Map method_type from payout_methods to valid enum values for method column
-        let withdrawalMethod = 'bank'; // default fallback
-        if (methodData?.method_type === 'crypto_wallet') {
-          withdrawalMethod = 'cryptocurrency';
-        } else if (methodData?.method_type === 'bank_transfer') {
-          withdrawalMethod = 'bank_transfer';
-        } else if (methodData?.method_type === 'paypal') {
-          withdrawalMethod = 'paypal';
-        }
-
-        // Build insert data with method field
-        const insertData = {
-          user_id: this.currentUser.id,
-          currency: this.selectedCurrency,
-          amount: amount,
-          fee_amount: feeAmount,
-          method: withdrawalMethod,
-          method_id: methodData?.id,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        };
-
+        // Fallback: Use direct REST API without method field (simplest approach)
         const result = await window.API.supabase
           .from('withdrawals')
-          .insert(insertData)
+          .insert({
+            user_id: this.currentUser.id,
+            currency: this.selectedCurrency,
+            amount: amount,
+            fee_amount: feeAmount,
+            method_id: methodData?.id,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          })
           .select()
           .single();
         
